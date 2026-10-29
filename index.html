@@ -161,6 +161,20 @@ try {
   .seg-ok { color:var(--okt); }
   .seg-no { color:var(--danger); }
   .resumo { color:var(--mut); font-size:14px; margin-bottom:12px; }
+  .tarefa { display:flex; gap:10px; align-items:flex-start; padding:9px 0; border-top:1px solid var(--bd); }
+  .tarefa:first-child { border-top:0; }
+  .tarefa input[type=checkbox] { width:20px; height:20px; margin-top:2px; flex:0 0 auto; cursor:pointer; }
+  .tarefa .tx { flex:1; min-width:0; word-break:break-word; }
+  .tarefa.feita .tx { text-decoration:line-through; color:var(--mut); }
+  .tarefa .meta { font-size:13px; color:var(--mut); }
+  .tarefa .meta.atraso { color:var(--danger); font-weight:600; }
+  .tarefa .acoes { display:flex; gap:6px; flex:0 0 auto; }
+  .tarefa .acoes button { padding:3px 8px; }
+  .tarefa .acoes input[type=date] { width:130px !important; font-size:13px; padding:4px 6px; }
+  .tgrupo { font-size:14px; font-weight:700; margin:16px 0 4px; }
+  .tgrupo.atraso { color:var(--danger); }
+  .tnova { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .tnova input[type=text] { flex:1 1 220px; min-width:0; }
   .motivo { color:var(--mut); font-size:13px; margin-bottom:6px; }
   .tabs { display:flex; gap:6px; margin-bottom:12px; }
   .tab { flex:1; padding:8px 4px; border:1px solid var(--bd); border-radius:8px; background:var(--inp); text-align:center; font-size:13px; cursor:pointer; color:var(--txt); }
@@ -247,6 +261,7 @@ try {
   <nav id="nav">
     <button data-v="inicio" class="on"><span class="ic">🏠</span><span>Início</span></button>
     <button data-v="plan"><span class="ic">📝</span><span>Planejar</span></button>
+    <button data-v="tarefas"><span class="ic">✅</span><span>Tarefas</span></button>
     <button data-v="extras"><span class="ic">🔁</span><span>Extras e ajustes</span></button>
     <button data-v="turma"><span class="ic">🔎</span><span>Por turma</span></button>
     <button data-v="hor"><span class="ic">🗓️</span><span>Horário</span></button>
@@ -262,6 +277,7 @@ try {
 <main>
   <section id="v-inicio"></section>
   <section id="v-plan" class="hide"></section>
+  <section id="v-tarefas" class="hide"></section>
   <section id="v-extras" class="hide"></section>
   <section id="v-turma" class="hide"></section>
   <section id="v-hor" class="hide"></section>
@@ -342,7 +358,7 @@ function vazio() {
       {id: uid(), nome: 'Escola Integral', aulas: 9, horas: {}},
       {id: uid(), nome: 'Escola Noturna', aulas: 4, horas: {}}
     ],
-    turmas: [], horario: {}, planos: {}, extras: [], ajustes: {}, dias: {}, registros: {}
+    turmas: [], horario: {}, planos: {}, extras: [], ajustes: {}, dias: {}, registros: {}, tarefas: []
   };
 }
 /* dados iniciais: horário e turmas transcritos das grades enviadas */
@@ -370,13 +386,13 @@ function seed() {
   [2, 3].forEach(d => [1, 2, 3, 4].forEach(a => {
     horario[eN.id + '|' + d + '|' + a] = t(eN, d === 2 ? 'EJA Presencial – História' : 'EJA Presencial – Geografia');
   }));
-  return {escolas: [eI, eN], turmas, horario, planos: {}, extras: [], ajustes: {}, dias: {}, registros: {}};
+  return {escolas: [eI, eN], turmas, horario, planos: {}, extras: [], ajustes: {}, dias: {}, registros: {}, tarefas: []};
 }
 /* converte dados da versão 1 (escola única) para a versão 2 */
 function migrar(d) {
   if (d.escolas) return Object.assign(vazio(), d);
   const e = {id: uid(), nome: 'Escola 1', aulas: d.aulas || 6, horas: d.horas || {}};
-  const n = {escolas:[e], turmas:[], horario:{}, planos:{}, extras:[], ajustes:{}, dias:{}, registros:{}};
+  const n = {escolas:[e], turmas:[], horario:{}, planos:{}, extras:[], ajustes:{}, dias:{}, registros:{}, tarefas:[]};
   (d.turmas||[]).forEach(t => n.turmas.push({id:t.id, nome:t.nome, escolaId:e.id}));
   Object.entries(d.horario||{}).forEach(([k,v]) => { const [dia,a] = k.split('|'); n.horario[e.id+'|'+dia+'|'+a] = v; });
   Object.entries(d.planos||{}).forEach(([k,v]) => { const [iso,a,t] = k.split('|'); n.planos[iso+'|'+e.id+'|'+a+'|'+t] = v; });
@@ -543,7 +559,7 @@ let viewAtual = 'inicio';
 let modalAtivo = { tipo: '', key: '' };
 
 /* ---------- navegação ---------- */
-const VIEWS = ['inicio','plan','extras','turma','hor','turmas','escolas','bkp'];
+const VIEWS = ['inicio','plan','tarefas','extras','turma','hor','turmas','escolas','bkp'];
 document.getElementById('nav').addEventListener('click', e => {
   const b = e.target.closest ? e.target.closest('button') : null;
   if (b && b.dataset.v) go(b.dataset.v);
@@ -552,7 +568,7 @@ function go(v, manter) {
   viewAtual = v;
   document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('on', b.dataset.v === v));
   VIEWS.forEach(x => document.getElementById('v-'+x).classList.toggle('hide', x !== v));
-  ({inicio:rInicio, plan:rPlan, extras:rExtras, turma:rTurma, hor:rHor, turmas:rTurmas, escolas:rEscolas, bkp:rBkp})[v]();
+  ({inicio:rInicio, plan:rPlan, tarefas:rTarefas, extras:rExtras, turma:rTurma, hor:rHor, turmas:rTurmas, escolas:rEscolas, bkp:rBkp})[v]();
   if (!manter && window.scrollTo) window.scrollTo(0, 0);
 }
 
@@ -705,6 +721,87 @@ function reg(key, ok) {
 }
 function regDesfaz(key) { delete S.registros[key]; save(); go(viewAtual, true); }
 
+/* ---------- Tarefas (checklist com datas) ---------- */
+function addDiasISO(iso, n) { const d = new Date(iso + 'T12:00:00'); d.setDate(d.getDate() + n); return fmt(d); }
+function rotuloData(iso) {
+  const h = fmt(new Date());
+  if (iso === h) return 'Hoje';
+  if (iso === addDiasISO(h, 1)) return 'Amanhã';
+  if (iso === addDiasISO(h, -1)) return 'Ontem';
+  return DIAS[dow(iso)] + ', ' + br(iso);
+}
+function linhaTarefa(t, comData) {
+  const h = fmt(new Date()), atraso = t.data && !t.feita && t.data < h;
+  const meta = t.data ? `<div class="meta${atraso ? ' atraso' : ''}">${atraso ? 'Atrasada · ' : ''}${esc(rotuloData(t.data))}</div>` : '';
+  return `<div class="tarefa${t.feita ? ' feita' : ''}">
+    <input type="checkbox" ${t.feita ? 'checked' : ''} onchange="tarefaMarcar('${t.id}', this.checked)" aria-label="Concluir tarefa">
+    <div class="tx">${esc(t.texto)}${comData ? meta : ''}</div>
+  </div>`;
+}
+function linhaTarefaPag(t) {
+  const h = fmt(new Date()), atraso = t.data && !t.feita && t.data < h;
+  return `<div class="tarefa${t.feita ? ' feita' : ''}">
+    <input type="checkbox" ${t.feita ? 'checked' : ''} onchange="tarefaMarcar('${t.id}', this.checked)" aria-label="Concluir tarefa">
+    <div class="tx">${esc(t.texto)}${t.data ? `<div class="meta${atraso ? ' atraso' : ''}">${atraso ? 'Atrasada · ' : ''}${esc(rotuloData(t.data))}</div>` : ''}</div>
+    <div class="acoes"><input type="date" value="${t.data || ''}" onchange="tarefaData('${t.id}', this.value)" title="Alterar data" style="width:auto">
+    <button class="s" onclick="tarefaExcluir('${t.id}')" title="Excluir" aria-label="Excluir tarefa">🗑</button></div>
+  </div>`;
+}
+function blocoTarefasInicio() {
+  const h = fmt(new Date()), am = addDiasISO(h, 1);
+  const pend = (S.tarefas || []).filter(t => !t.feita && t.data && t.data <= am)
+    .sort((a, b) => a.data.localeCompare(b.data) || a.texto.localeCompare(b.texto, 'pt-BR'));
+  if (!pend.length) return '';
+  const grupo = (tit, arr, cls) => arr.length ? `<div class="tgrupo ${cls || ''}">${tit}</div>` + arr.map(t => linhaTarefa(t, false)).join('') : '';
+  return `<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+    <b>✅ Tarefas pendentes</b><button class="s" onclick="go('tarefas')">Ver todas</button></div>` +
+    grupo('Atrasadas', pend.filter(t => t.data < h), 'atraso') +
+    grupo('Hoje', pend.filter(t => t.data === h)) +
+    grupo('Amanhã', pend.filter(t => t.data === am)) + `</div>`;
+}
+function tarefaAdd() {
+  const tx = document.getElementById('t-texto'), dt = document.getElementById('t-data');
+  const texto = tx.value.trim(); if (!texto) { tx.focus(); return; }
+  S.tarefas.push({id: uid(), texto, data: dt.value || '', feita: false});
+  save(); go('tarefas', true);
+  const n = document.getElementById('t-texto'); if (n) n.focus();
+}
+function tarefaMarcar(id, v) { const t = S.tarefas.find(t => t.id === id); if (t) { t.feita = !!v; save(); go(viewAtual, true); } }
+function tarefaData(id, v) { const t = S.tarefas.find(t => t.id === id); if (t) { t.data = v || ''; save(); go('tarefas', true); } }
+function tarefaExcluir(id) { S.tarefas = S.tarefas.filter(t => t.id !== id); save(); go('tarefas', true); }
+function tarefasLimpar() {
+  const n = S.tarefas.filter(t => t.feita).length;
+  if (n && confirm('Excluir as ' + n + ' tarefas concluídas?')) { S.tarefas = S.tarefas.filter(t => !t.feita); save(); go('tarefas', true); }
+}
+function rTarefas() {
+  const el = document.getElementById('v-tarefas');
+  const h = fmt(new Date()), am = addDiasISO(h, 1);
+  const todas = S.tarefas || [];
+  const abertas = todas.filter(t => !t.feita), feitas = todas.filter(t => t.feita);
+  const ord = a => [...a].sort((x, y) => (x.data || '9999').localeCompare(y.data || '9999') || x.texto.localeCompare(y.texto, 'pt-BR'));
+  const grupo = (tit, arr, cls) => arr.length ? `<div class="tgrupo ${cls || ''}">${tit} (${arr.length})</div>` + ord(arr).map(linhaTarefaPag).join('') : '';
+  let html = `<h2 style="font-size:20px">Tarefas</h2>
+  <div class="card"><div class="tnova">
+    <input type="text" id="t-texto" placeholder="Nova tarefa…" onkeydown="if(event.key==='Enter')tarefaAdd()">
+    <input type="date" id="t-data" value="${h}" style="width:auto" title="Data (apague para deixar sem data)">
+    <button class="b" onclick="tarefaAdd()">Adicionar</button>
+  </div></div>`;
+  if (!todas.length) html += `<div class="card vazio">Nenhuma tarefa ainda. Adicione acima; as de hoje e de amanhã aparecem na página inicial.</div>`;
+  else {
+    html += `<div class="card">` +
+      (abertas.length ? '' : `<div class="vazio">Nenhuma tarefa pendente 🎉</div>`) +
+      grupo('Atrasadas', abertas.filter(t => t.data && t.data < h), 'atraso') +
+      grupo('Hoje', abertas.filter(t => t.data === h)) +
+      grupo('Amanhã', abertas.filter(t => t.data === am)) +
+      grupo('Próximas', abertas.filter(t => t.data > am)) +
+      grupo('Sem data', abertas.filter(t => !t.data)) + `</div>`;
+    if (feitas.length) html += `<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+      <b>Concluídas (${feitas.length})</b><button class="s" onclick="tarefasLimpar()">Excluir concluídas</button></div>` +
+      ord(feitas).reverse().map(linhaTarefaPag).join('') + `</div>`;
+  }
+  el.innerHTML = html;
+}
+
 /* ---------- Início: aulas do dia ---------- */
 function moverDia(n) { diaIni.setDate(diaIni.getDate() + n); rInicio(); }
 function rInicio() {
@@ -719,7 +816,7 @@ function rInicio() {
     <button class="s push" onclick="novaExtra('${iso}')">+ Aula extra</button>
     <button class="s" onclick="ajustarDia('${iso}')">Alterar este dia</button>
   </div>
-  <h2 style="font-size:20px">${DIAS_F[w]}, ${br(iso)}${ehHoje ? ' <span class="badge" style="background:var(--pri)">hoje</span>' : ''}</h2>` + bannerDia(iso);
+  <h2 style="font-size:20px">${DIAS_F[w]}, ${br(iso)}${ehHoje ? ' <span class="badge" style="background:var(--pri)">hoje</span>' : ''}</h2>` + bannerDia(iso) + blocoTarefasInicio();
 
   const itens = itensDoDia(iso);
   if (!itens.length) {
@@ -1274,7 +1371,8 @@ function merge3(b, l, c) {
     escolas: listMerge(b.escolas, l.escolas, c.escolas), turmas: listMerge(b.turmas, l.turmas, c.turmas),
     extras: listMerge(b.extras, l.extras, c.extras), horario: mapMerge(b.horario, l.horario, c.horario),
     planos: mapMerge(b.planos, l.planos, c.planos), ajustes: mapMerge(b.ajustes, l.ajustes, c.ajustes),
-    dias: mapMerge(b.dias, l.dias, c.dias), registros: mapMerge(b.registros, l.registros, c.registros)
+    dias: mapMerge(b.dias, l.dias, c.dias), registros: mapMerge(b.registros, l.registros, c.registros),
+    tarefas: listMerge(b.tarefas, l.tarefas, c.tarefas)
   };
 }
 function canon(x) {
@@ -1283,7 +1381,7 @@ function canon(x) {
 }
 function mesmosDados(d) { try { return canon(JSON.parse(d.dados)) === canon(S); } catch (e) { return false; } }
 function vazioLocal() {
-  return !Object.keys(S.planos).length && !S.extras.length && !Object.keys(S.ajustes).length && !Object.keys(S.dias).length;
+  return !Object.keys(S.planos).length && !S.extras.length && !Object.keys(S.ajustes).length && !Object.keys(S.dias).length && !(S.tarefas||[]).length;
 }
 function renderizarAtual() {
   const a = document.activeElement;

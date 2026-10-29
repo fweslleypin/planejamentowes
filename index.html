@@ -78,15 +78,50 @@ try {
   .slot:last-child { margin-bottom:0; }
   .wk .c .slot { flex:1; }
   .slot.has textarea { background:var(--ok); }
-  .slot label { display:block; font-size:12px; color:var(--mut); margin-bottom:3px; }
+  .slot label { display:flex; justify-content:space-between; align-items:flex-start; font-size:12px; color:var(--mut); margin-bottom:3px; gap:4px; }
   .slot label b { color:var(--txt); }
+  .slot-acoes { display:inline-flex; align-items:center; gap:4px; }
+  .btn-exp { background:transparent; border:0; color:var(--pri); cursor:pointer; font-size:13px; padding:0 2px; }
   .ajl { color:var(--pri); cursor:pointer; font-size:13px; text-decoration:none; margin-left:2px; }
 
   /* início, planejar (celular) e extras */
   .aula { background:var(--card); border:1px solid var(--bd); border-left:6px solid var(--cor,#999); border-radius:10px; padding:12px 14px; margin-bottom:12px; }
-  .aula h3 { margin:0 0 8px; font-size:15px; }
+  .aula h3 { margin:0 0 8px; font-size:15px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; }
   .aula .slot { border-left:0; padding-left:0; margin-bottom:8px; }
   
+  /* Aula em andamento (destaque em tempo real) */
+  .aula.aula-agora {
+    border: 2px solid var(--pri);
+    border-left: 8px solid var(--pri);
+    background: var(--hoje);
+    box-shadow: 0 4px 18px rgba(47, 111, 237, 0.22);
+    position: relative;
+    animation: destaquePulsar 2.8s ease-in-out infinite;
+  }
+  @keyframes destaquePulsar {
+    0%, 100% { box-shadow: 0 4px 14px rgba(47, 111, 237, 0.18); }
+    50% { box-shadow: 0 6px 24px rgba(47, 111, 237, 0.35); }
+  }
+  .badge-agora {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #e74c3c;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 3px 9px;
+    border-radius: 20px;
+    margin-right: 6px;
+    animation: piscaDot 1.4s infinite alternate;
+  }
+  @keyframes piscaDot {
+    0% { opacity: 0.85; }
+    100% { opacity: 1; filter: brightness(1.15); }
+  }
+
   /* NOVO ESTILO: Destaque do Planejamento */
   .plano { 
     white-space:pre-wrap; 
@@ -151,9 +186,33 @@ try {
   .hdr-dir { margin-left:auto; display:flex; gap:8px; align-items:center; flex-shrink:0; }
   #sync { background:rgba(255,255,255,.2); color:#fff; border:0; border-radius:14px; padding:5px 12px; font-size:12px; cursor:pointer; }
   #tema { background:rgba(255,255,255,.2); color:#fff; border:0; border-radius:50%; width:32px; height:32px; font-size:16px; line-height:1; cursor:pointer; padding:0; }
-  #login, #conta { position:fixed; inset:0; background:rgba(10,14,25,.6); display:flex; align-items:center; justify-content:center; z-index:50; padding:16px; }
+  #login, #conta, #modal-plano { position:fixed; inset:0; background:rgba(10,14,25,.6); display:flex; align-items:center; justify-content:center; z-index:50; padding:16px; backdrop-filter:blur(2px); }
   #login .box, #conta .box { background:var(--card); color:var(--txt); border:1px solid var(--bd); border-radius:12px; padding:20px; max-width:380px; width:100%; max-height:100%; overflow:auto; }
   #login input, #conta input { width:100%; margin-bottom:8px; }
+
+  /* Popup / Modal de Edição Ampliada */
+  #modal-plano .box-plano {
+    background:var(--card);
+    color:var(--txt);
+    border:1px solid var(--bd);
+    border-radius:14px;
+    padding:18px 20px;
+    max-width:820px;
+    width:100%;
+    max-height:92vh;
+    display:flex;
+    flex-direction:column;
+    box-shadow:0 12px 35px rgba(0,0,0,0.3);
+  }
+  .modal-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; gap:12px; }
+  .modal-top h2 { margin:0; font-size:17px; }
+  .modal-top .btn-fechar { background:transparent; border:0; font-size:22px; cursor:pointer; color:var(--mut); line-height:1; padding:0 4px; }
+  .topicos-bar { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; align-items:center; }
+  .topicos-bar span { font-size:12px; font-weight:600; color:var(--mut); }
+  .chip-topico { background:var(--sup); color:var(--txt); border:1px solid var(--bd); border-radius:16px; padding:4px 10px; font-size:12px; cursor:pointer; font-weight:500; }
+  .chip-topico:hover { border-color:var(--pri); color:var(--pri); }
+  #modal-txt { flex:1; min-height:280px; font-size:15px; line-height:1.55; padding:12px; border-radius:8px; }
+  .modal-rodape { display:flex; justify-content:space-between; align-items:center; margin-top:12px; flex-wrap:wrap; gap:8px; }
 
   /* celular: barra de abas embaixo, como um app */
   @media (max-width: 760px) {
@@ -175,6 +234,9 @@ try {
     .card { padding:12px; }
     .bar { gap:6px; }
     .bar .push { margin-left:0; }
+    #modal-plano { padding:10px; }
+    #modal-plano .box-plano { padding:14px; max-height:96vh; }
+    #modal-txt { min-height:220px; font-size:16px; }
   }
 </style>
 </head>
@@ -206,6 +268,39 @@ try {
   <section id="v-escolas" class="hide"></section>
   <section id="v-bkp" class="hide"></section>
 </main>
+
+<!-- Modal / Popup para Digitação Expandida e Tópicos -->
+<div id="modal-plano" class="hide" onclick="if(event.target===this)fecharModalPlano()">
+  <div class="box-plano">
+    <div class="modal-top">
+      <div>
+        <h2 id="modal-tit">Planejamento da Aula</h2>
+        <div id="modal-sub" class="vazio" style="font-size:13px;margin-top:2px"></div>
+      </div>
+      <button class="btn-fechar" onclick="fecharModalPlano()" title="Fechar">✕</button>
+    </div>
+    
+    <div class="topicos-bar">
+      <span>Inserir tópico:</span>
+      <button type="button" class="chip-topico" onclick="inserirTopico('• Conteúdo: ')">+ Conteúdo</button>
+      <button type="button" class="chip-topico" onclick="inserirTopico('• Atividade: ')">+ Atividade</button>
+      <button type="button" class="chip-topico" onclick="inserirTopico('• Tarefa de Casa: ')">+ Tarefa</button>
+      <button type="button" class="chip-topico" onclick="inserirTopico('• Recursos: ')">+ Recursos</button>
+      <button type="button" class="chip-topico" onclick="inserirTopico('• Avaliação: ')">+ Avaliação</button>
+      <button type="button" class="chip-topico" onclick="inserirTopico('• ')">• Marcador</button>
+    </div>
+
+    <textarea id="modal-txt" placeholder="Descreva os tópicos e o que será feito nesta aula…"></textarea>
+    
+    <div class="modal-rodape">
+      <span class="vazio" id="modal-status">Salvo automaticamente</span>
+      <div style="display:flex;gap:8px">
+        <button class="s" onclick="fecharModalPlano()">Concluir</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="login" class="hide"><div class="box">
   <h2>☁ Entrar para sincronizar</h2>
   <p class="vazio">Use o mesmo usuário e a mesma senha no computador e no celular. Na primeira vez, escolha um usuário e uma senha e toque em "Criar conta".</p>
@@ -297,8 +392,8 @@ function load() {
   try { localStorage.setItem(KEY, JSON.stringify(s)); } catch(e) {}
   return s;
 }
-/* ---------- estado da sincronização (código na seção "Sincronização na nuvem", mais abaixo) ---------- */
-const FIREBASE_CONFIG = {       // configuração do projeto no Firebase (não é segredo; a proteção está nas regras do Firestore)
+/* ---------- estado da sincronização ---------- */
+const FIREBASE_CONFIG = {
   apiKey: "AIzaSyDgKNlnn5lWQ1OMJxtCXNtN6IQWC2wG9gY",
   authDomain: "plano-de-aulas-e576c.firebaseapp.com",
   projectId: "plano-de-aulas-e576c",
@@ -343,11 +438,9 @@ function isMob() { return typeof matchMedia === 'function' && matchMedia('(max-w
 function diaCfg(iso, eid) { return S.dias[iso+'|'+eid] || S.dias[iso+'|*'] || null; }
 function diasDe(iso) { return Object.keys(S.dias).filter(k => k.startsWith(iso+'|')).map(k => [k.split('|')[1], S.dias[k]]); }
 function normDias() { Object.keys(S.dias).forEach(k => { if (k.indexOf('|') < 0) { S.dias[k+'|*'] = S.dias[k]; delete S.dias[k]; } }); }
-/* dia da semana cujo horário vale numa data para uma escola (muda quando o dia "segue o horário de outro dia") */
 function diaW(iso, eid) { const dd = diaCfg(iso, eid); return dd && dd.tipo === 'como' ? dd.dow : dow(iso); }
 
-/* aula efetiva de um horário numa data. Devolve null quando não há aula:
-   sem horário, dia sem aula, aula cancelada ou cedida a outro professor. */
+/* aula efetiva de um horário numa data */
 function efetiva(e, iso, w, a) {
   const dd = diaCfg(iso, e.id);
   if (dd && dd.tipo === 'feriado') return null;
@@ -363,7 +456,6 @@ function efetiva(e, iso, w, a) {
   }
   return {tid: tid0, nome: turmaNome(tid0), k: iso+'|'+e.id+'|'+a+'|'+tid0};
 }
-/* aulas de um dia (horário + extras), em ordem de escola e número da aula */
 function itensDoDia(iso) {
   const w = dow(iso), itens = [];
   S.escolas.forEach((e, ei) => {
@@ -379,6 +471,41 @@ function itensDoDia(iso) {
   itens.sort((p, q) => p.ei - q.ei || p.a - q.a || (p.x ? 1 : 0) - (q.x ? 1 : 0));
   return itens;
 }
+
+/* Verifica se uma aula está acontecendo agora com base no horário cadastrado */
+function getIntervaloMinutos(strHora) {
+  if (!strHora || typeof strHora !== 'string') return null;
+  const limpo = strHora.trim();
+  const mIntervalo = limpo.match(/^(\d{1,2}):(\d{2})\s*(?:-|às|a)\s*(\d{1,2}):(\d{2})$/);
+  if (mIntervalo) {
+    const ini = parseInt(mIntervalo[1], 10) * 60 + parseInt(mIntervalo[2], 10);
+    const fim = parseInt(mIntervalo[3], 10) * 60 + parseInt(mIntervalo[4], 10);
+    return { ini, fim };
+  }
+  const mInicio = limpo.match(/^(\d{1,2}):(\d{2})$/);
+  if (mInicio) {
+    const ini = parseInt(mInicio[1], 10) * 60 + parseInt(mInicio[2], 10);
+    return { ini, fim: ini + 50 }; // duração padrão estimada: 50 minutos
+  }
+  return null;
+}
+
+function isAulaAgora(item, isoHoje) {
+  const agoraDate = new Date();
+  if (isoHoje !== fmt(agoraDate)) return false;
+  let strHora = '';
+  if (item.e && item.a && item.e.horas) {
+    strHora = item.e.horas[item.a] || '';
+  } else if (item.x && item.x.aula && item.x.escolaId) {
+    const escObj = escola(item.x.escolaId);
+    if (escObj && escObj.horas) strHora = escObj.horas[item.x.aula] || '';
+  }
+  const range = getIntervaloMinutos(strHora);
+  if (!range) return false;
+  const minutosAtuais = agoraDate.getHours() * 60 + agoraDate.getMinutes();
+  return minutosAtuais >= range.ini && minutosAtuais < range.fim;
+}
+
 /* aviso quando o dia inteiro foi alterado */
 function bannerDia(iso) {
   return diasDe(iso).map(([eid, dd]) => {
@@ -388,7 +515,6 @@ function bannerDia(iso) {
       <button class="s" onclick="desfazDia('${iso}|${eid}')">Desfazer</button></div>`;
   }).join('');
 }
-/* planejamentos guardados só aparecem se a aula continua valendo naquela data */
 function planoVisivel(data, eid, aula, tid) {
   const dd = diaCfg(data, eid);
   if (dd && dd.tipo === 'feriado') return false;
@@ -402,8 +528,8 @@ function nomePlano(data, eid, aula, tid) {
   return turmaNome(tid);
 }
 
-let ref = agora();       // semana/dia da aba Planejar
-let diaIni = agora();    // dia da aba Início
+let ref = agora();
+let diaIni = agora();
 let turmaSel = '';
 let escolaHor = '';
 let diaHor = 1;
@@ -411,6 +537,9 @@ let extraData = '';
 let ajPre = null;
 let diaPre = '';
 let viewAtual = 'inicio';
+
+/* Estado do Modal de Edição Ampliada */
+let modalAtivo = { tipo: '', key: '' };
 
 /* ---------- navegação ---------- */
 const VIEWS = ['inicio','plan','extras','turma','hor','turmas','escolas','bkp'];
@@ -426,7 +555,7 @@ function go(v, manter) {
   if (!manter && window.scrollTo) window.scrollTo(0, 0);
 }
 
-/* salva automaticamente os textareas de planejamento (data-k), de extras (data-x) e de "o que aconteceu" (data-r) */
+/* auto-save dos textareas */
 function bindAuto(root) {
   root.querySelectorAll('textarea[data-k], textarea[data-x], textarea[data-r]').forEach(t => {
     let tm;
@@ -444,8 +573,109 @@ function bindAuto(root) {
   });
 }
 
+/* ---------- Modal de Edição Ampliada com Tópicos ---------- */
+function abrirModalPlano(tipo, key, titulo, subtitulo) {
+  modalAtivo = { tipo, key };
+  const $ = id => document.getElementById(id);
+  $('modal-tit').textContent = titulo || 'Planejamento da Aula';
+  $('modal-sub').textContent = subtitulo || '';
+  
+  let val = '';
+  if (tipo === 'k') {
+    val = S.planos[key] || '';
+  } else if (tipo === 'x') {
+    const x = S.extras.find(e => e.id === key);
+    val = x ? (x.plano || '') : '';
+  }
+  const txt = $('modal-txt');
+  txt.value = val;
+  $('modal-status').textContent = 'Salvo automaticamente';
+  $('modal-plano').classList.remove('hide');
+  setTimeout(() => { txt.focus(); }, 80);
+}
+
+function fecharModalPlano() {
+  document.getElementById('modal-plano').classList.add('hide');
+  modalAtivo = { tipo: '', key: '' };
+  // Atualiza a visualização atual imediatamente ao fechar o modal
+  go(viewAtual, true);
+}
+
+function inserirTopico(textoTopico) {
+  const txt = document.getElementById('modal-txt');
+  const inicio = txt.selectionStart;
+  const fim = txt.selectionEnd;
+  const antes = txt.value.substring(0, inicio);
+  const depois = txt.value.substring(fim);
+  
+  // Adiciona quebra de linha antes caso o cursor não esteja no começo de uma nova linha
+  const precisaQuebra = antes.length > 0 && !antes.endsWith('\n');
+  const insercao = (precisaQuebra ? '\n' : '') + textoTopico;
+  
+  txt.value = antes + insercao + depois;
+  const novaPos = inicio + insercao.length;
+  txt.focus();
+  txt.setSelectionRange(novaPos, novaPos);
+  
+  // Dispara o salvamento e atualização
+  salvarDoModal();
+}
+
+function salvarDoModal() {
+  if (!modalAtivo.key) return;
+  const txt = document.getElementById('modal-txt');
+  const v = txt.value;
+  const st = document.getElementById('modal-status');
+  if (modalAtivo.tipo === 'k') {
+    if (v.trim()) S.planos[modalAtivo.key] = v;
+    else delete S.planos[modalAtivo.key];
+    const el = document.querySelector(`textarea[data-k="${modalAtivo.key}"]`);
+    if (el) {
+      el.value = v;
+      const sl = el.closest('.slot');
+      if (sl) sl.classList.toggle('has', !!v.trim());
+    }
+  } else if (modalAtivo.tipo === 'x') {
+    const x = S.extras.find(e => e.id === modalAtivo.key);
+    if (x) x.plano = v;
+    const el = document.querySelector(`textarea[data-x="${modalAtivo.key}"]`);
+    if (el) {
+      el.value = v;
+      const sl = el.closest('.slot');
+      if (sl) sl.classList.toggle('has', !!v.trim());
+    }
+  }
+  save();
+
+  // Se a edição foi feita estando na tela inicial, atualiza o card e texto da aula instantaneamente
+  if (viewAtual === 'inicio') {
+    rInicio();
+  }
+
+  if (st) {
+    st.textContent = '✔ Salvo';
+    setTimeout(() => { if (st) st.textContent = 'Salvo automaticamente'; }, 1300);
+  }
+}
+
+// Vincula digitação no textarea do modal
+(function setupModalInput() {
+  let tm;
+  window.addEventListener('DOMContentLoaded', () => {
+    const txt = document.getElementById('modal-txt');
+    if (!txt) return;
+    txt.addEventListener('input', () => {
+      clearTimeout(tm);
+      tm = setTimeout(salvarDoModal, 300);
+    });
+    txt.addEventListener('change', () => {
+      clearTimeout(tm);
+      salvarDoModal();
+    });
+  });
+})();
+
 /* ---------- Confirmação: o planejamento foi seguido? ---------- */
-/* chave do registro: a mesma do planejamento (data|escola|aula|turma) ou "x|id" para aula extra */
 function podeConfirmar(iso) { return iso <= fmt(new Date()); }
 function blocoConfirma(key, iso) {
   if (!podeConfirmar(iso)) return '';
@@ -503,24 +733,45 @@ function rInicio() {
     (pend ? ` · <b style="color:var(--warn)">${pend} sem planejamento</b>` : ' · tudo planejado ✔') +
     (aConf ? ` · <b style="color:var(--warn)">${aConf} ${aConf === 1 ? 'a confirmar' : 'a confirmar'}</b>` : '') + `</div>`;
 
+  // Ordena para que a aula em andamento fique em primeiro lugar se for o dia de hoje
+  if (ehHoje) {
+    itens.sort((p, q) => {
+      const pAgora = isAulaAgora(p, iso);
+      const qAgora = isAulaAgora(q, iso);
+      if (pAgora && !qAgora) return -1;
+      if (!pAgora && qAgora) return 1;
+      return 0;
+    });
+  }
+
   itens.forEach(i => {
+    const agoraMesmo = isAulaAgora(i, iso);
+    const seloAgora = agoraMesmo ? `<span class="badge-agora" title="Aula em andamento agora">● VOCÊ ESTÁ NESTA AULA</span>` : '';
+    const classeDestaque = agoraMesmo ? ' aula-agora' : '';
+
     if (i.x) {
       const x = i.x, txt = (x.plano || '').trim();
-      html += `<div class="aula" style="--cor:${cor(x.escolaId)}">
-        <h3><span class="badge">EXTRA</span><span class="tag" style="--cor:${cor(x.escolaId)}">${esc(escolaNome(x.escolaId))}</span>${x.aula ? x.aula+'ª aula · ' : ''}${esc(extraTurma(x))}</h3>
+      const tit = `Aula Extra · ${extraTurma(x)}`;
+      const sub = `${br(iso)} (${DIAS[w]}) · ${escolaNome(x.escolaId)}`;
+      html += `<div class="aula${classeDestaque}" style="--cor:${cor(x.escolaId)}">
+        <h3><span>${seloAgora}<span class="badge">EXTRA</span><span class="tag" style="--cor:${cor(x.escolaId)}">${esc(escolaNome(x.escolaId))}</span>${x.aula ? x.aula+'ª aula · ' : ''}${esc(extraTurma(x))}</span>
+        <button class="s" onclick="abrirModalPlano('x','${x.id}','${esc(tit)}','${esc(sub)}')">⛶ Abrir tela maior</button></h3>
         ${x.motivo ? `<div class="motivo">Motivo: ${esc(x.motivo)}</div>` : ''}` +
         (txt ? `<div class="plano">${esc(x.plano)}</div>` + blocoConfirma('x|' + x.id, iso)
-             : `<div class="sem">Esta aula extra ainda não tem planejamento. Vá até a aba <b>Extras e ajustes</b> para preencher. <button class="s" onclick="go('extras')">Abrir Extras e ajustes</button></div>`) +
+             : `<div class="sem">Esta aula extra ainda não tem planejamento. <button class="s" onclick="abrirModalPlano('x','${x.id}','${esc(tit)}','${esc(sub)}')">Planejar agora (tela maior)</button></div>`) +
         `</div>`;
     } else {
       const e = i.e, eff = i.eff, ak = iso+'|'+e.id+'|'+i.a;
       const h = e.horas[i.a] ? ' ('+esc(e.horas[i.a])+')' : '';
       const txt = (S.planos[eff.k] || '').trim();
-      html += `<div class="aula" style="--cor:${cor(e.id)}">
-        <h3><span class="tag" style="--cor:${cor(e.id)}">${esc(e.nome)}</span>${i.a}ª aula${h} · ${esc(eff.nome)}${eff.troca ? ' <span class="badge">TROCA</span>' : ''}</h3>` +
+      const tit = `${eff.nome} · ${i.a}ª aula`;
+      const sub = `${br(iso)} (${DIAS[w]}) · ${e.nome}${h}`;
+      html += `<div class="aula${classeDestaque}" style="--cor:${cor(e.id)}">
+        <h3><span>${seloAgora}<span class="tag" style="--cor:${cor(e.id)}">${esc(e.nome)}</span>${i.a}ª aula${h} · ${esc(eff.nome)}${eff.troca ? ' <span class="badge">TROCA</span>' : ''}</span>
+        <button class="s" onclick="abrirModalPlano('k','${eff.k}','${esc(tit)}','${esc(sub)}')">⛶ Abrir tela maior</button></h3>` +
         (eff.troca ? `<div class="motivo">No lugar de ${esc(eff.de)}${eff.motivo ? ' · '+esc(eff.motivo) : ''}</div>` : '') +
         (txt ? `<div class="plano">${esc(S.planos[eff.k])}</div>` + blocoConfirma(eff.k, iso)
-             : `<div class="sem">Ainda não há planejamento para esta aula. Vá até a aba <b>Planejar</b> para preencher. <button class="s" onclick="irPara('${iso}')">Abrir na aba Planejar</button></div>`) +
+             : `<div class="sem">Ainda não há planejamento para esta aula. <button class="s" onclick="abrirModalPlano('k','${eff.k}','${esc(tit)}','${esc(sub)}')">Planejar agora (tela maior)</button></div>`) +
         `<div><button class="s" onclick="ajustar('${iso}','${e.id}',${i.a})">Cancelar, ceder ou trocar</button>` +
         (eff.troca ? ` <button class="s" onclick="desfazAj('${ak}')">Desfazer troca</button>` : '') + `</div></div>`;
     }
@@ -576,8 +827,16 @@ function planSemana(dias, hoje) {
         const h = d.iso === hoje ? ' hoje' : '';
         if (!eff) { g += `<div class="c ev${h}"></div>`; return; }
         const txt = S.planos[eff.k] || '';
+        const tit = `${eff.nome} · ${a}ª aula`;
+        const sub = `${br(d.iso)} (${DIAS[d.w]}) · ${e.nome}${e.horas[a] ? ' ('+e.horas[a]+')' : ''}`;
         g += `<div class="c${h}"><div class="slot ${txt?'has':''}" style="--cor:${cor(e.id)}">
-          <label><b>${esc(eff.nome)}</b>${marcaReg(eff.k)}${eff.troca ? ' <span class="badge">TROCA</span><br><small>no lugar de '+esc(eff.de)+'</small>' : ''} <a class="ajl" title="Cancelar, ceder ou trocar esta aula" onclick="ajustar('${d.iso}','${e.id}',${a})">⚙</a></label>
+          <label>
+            <span><b>${esc(eff.nome)}</b>${marcaReg(eff.k)}${eff.troca ? ' <span class="badge">TROCA</span><br><small>no lugar de '+esc(eff.de)+'</small>' : ''}</span>
+            <span class="slot-acoes">
+              <button type="button" class="btn-exp" title="Digitar em tela maior com tópicos" onclick="abrirModalPlano('k','${eff.k}','${esc(tit)}','${esc(sub)}')">⛶</button>
+              <a class="ajl" title="Cancelar, ceder ou trocar esta aula" onclick="ajustar('${d.iso}','${e.id}',${a})">⚙</a>
+            </span>
+          </label>
           <textarea data-k="${eff.k}" placeholder="O que será feito…">${esc(txt)}</textarea></div></div>`;
       });
     });
@@ -589,9 +848,18 @@ function planSemana(dias, hoje) {
       const xs = S.extras.filter(x => x.data === d.iso).sort((p,q) => (p.aula||99) - (q.aula||99));
       const h = d.iso === hoje ? ' hoje' : '';
       if (!xs.length) { g += `<div class="c ev${h}"></div>`; return; }
-      g += `<div class="c${h}">` + xs.map(x => `<div class="slot ${(x.plano||'').trim()?'has':''}" style="--cor:${cor(x.escolaId)}">
-        <label><span class="tag" style="--cor:${cor(x.escolaId)}">${esc(escolaNome(x.escolaId))}</span>${x.aula ? x.aula+'ª aula · ' : ''}<b>${esc(extraTurma(x))}</b>${x.motivo ? '<br><i>'+esc(x.motivo)+'</i>' : ''}</label>
-        <textarea data-x="${x.id}" placeholder="O que será feito…">${esc(x.plano||'')}</textarea></div>`).join('') + '</div>';
+      g += `<div class="c${h}">` + xs.map(x => {
+        const tit = `Aula Extra · ${extraTurma(x)}`;
+        const sub = `${br(d.iso)} (${DIAS[d.w]}) · ${escolaNome(x.escolaId)}`;
+        return `<div class="slot ${(x.plano||'').trim()?'has':''}" style="--cor:${cor(x.escolaId)}">
+        <label>
+          <span><span class="tag" style="--cor:${cor(x.escolaId)}">${esc(escolaNome(x.escolaId))}</span>${x.aula ? x.aula+'ª aula · ' : ''}<b>${esc(extraTurma(x))}</b>${x.motivo ? '<br><i>'+esc(x.motivo)+'</i>' : ''}</span>
+          <span class="slot-acoes">
+            <button type="button" class="btn-exp" title="Digitar em tela maior com tópicos" onclick="abrirModalPlano('x','${x.id}','${esc(tit)}','${esc(sub)}')">⛶</button>
+          </span>
+        </label>
+        <textarea data-x="${x.id}" placeholder="O que será feito…">${esc(x.plano||'')}</textarea></div>`;
+      }).join('') + '</div>';
     });
   }
   g += '</div></div>';
@@ -611,16 +879,26 @@ function planDia(dias, hoje) {
   itens.forEach(i => {
     if (i.x) {
       const x = i.x;
+      const tit = `Aula Extra · ${extraTurma(x)}`;
+      const sub = `${br(sel)} (${DIAS[dow(sel)]}) · ${escolaNome(x.escolaId)}`;
       h += `<div class="aula" style="--cor:${cor(x.escolaId)}">
-        <h3><span class="badge">EXTRA</span><span class="tag" style="--cor:${cor(x.escolaId)}">${esc(escolaNome(x.escolaId))}</span>${x.aula ? x.aula+'ª aula · ' : ''}${esc(extraTurma(x))}</h3>
+        <h3>
+          <span><span class="badge">EXTRA</span><span class="tag" style="--cor:${cor(x.escolaId)}">${esc(escolaNome(x.escolaId))}</span>${x.aula ? x.aula+'ª aula · ' : ''}${esc(extraTurma(x))}</span>
+          <button class="s" onclick="abrirModalPlano('x','${x.id}','${esc(tit)}','${esc(sub)}')">⛶ Tela maior</button>
+        </h3>
         ${x.motivo ? `<div class="motivo">Motivo: ${esc(x.motivo)}</div>` : ''}
         <div class="slot ${(x.plano||'').trim()?'has':''}"><textarea data-x="${x.id}" placeholder="O que será feito…">${esc(x.plano||'')}</textarea></div>
         ${(x.plano||'').trim() ? blocoConfirma('x|' + x.id, sel) : ''}</div>`;
     } else {
       const e = i.e, eff = i.eff, txt = S.planos[eff.k] || '';
       const hr = e.horas[i.a] ? ' ('+esc(e.horas[i.a])+')' : '';
+      const tit = `${eff.nome} · ${i.a}ª aula`;
+      const sub = `${br(sel)} (${DIAS[dow(sel)]}) · ${e.nome}${hr}`;
       h += `<div class="aula" style="--cor:${cor(e.id)}">
-        <h3><span class="tag" style="--cor:${cor(e.id)}">${esc(e.nome)}</span>${i.a}ª aula${hr} · ${esc(eff.nome)}${eff.troca ? ' <span class="badge">TROCA</span>' : ''}</h3>
+        <h3>
+          <span><span class="tag" style="--cor:${cor(e.id)}">${esc(e.nome)}</span>${i.a}ª aula${hr} · ${esc(eff.nome)}${eff.troca ? ' <span class="badge">TROCA</span>' : ''}</span>
+          <button class="s" onclick="abrirModalPlano('k','${eff.k}','${esc(tit)}','${esc(sub)}')">⛶ Tela maior</button>
+        </h3>
         ${eff.troca ? `<div class="motivo">No lugar de ${esc(eff.de)}</div>` : ''}
         <div class="slot ${txt?'has':''}"><textarea data-k="${eff.k}" placeholder="O que será feito…">${esc(txt)}</textarea></div>
         ${txt.trim() ? blocoConfirma(eff.k, sel) : ''}
@@ -959,10 +1237,7 @@ function exportarTxt() {
   baixar('planejamento-'+fmt(new Date())+'.txt', L.join('\n'), 'text/plain');
 }
 
-/* ---------- Sincronização na nuvem (Firebase: login + Firestore) ---------- */
-/* Os dados continuam salvos neste aparelho (funciona sem internet). Com a conta ligada, cada alteração
-   é enviada para um documento seu na nuvem e os outros aparelhos recebem. Se dois aparelhos mexerem ao
-   mesmo tempo, as alterações são mescladas (no mesmo item, vale a do aparelho que está enviando). */
+/* ---------- Sincronização na nuvem ---------- */
 function offline() { return typeof navigator !== 'undefined' && navigator.onLine === false; }
 function setStatus(s) {
   cloud.status = s;
@@ -978,12 +1253,11 @@ function setStatus(s) {
 }
 function clickSync() { if (cloud.user) go('bkp'); else mostrarLogin(); }
 
-/* mescla de três vias: base (último estado sincronizado), local (este aparelho) e nuvem */
 function mapMerge(b, l, c) {
   const out = {}, eq = (x, y) => JSON.stringify(x) === JSON.stringify(y);
   new Set([...Object.keys(b || {}), ...Object.keys(l || {}), ...Object.keys(c || {})]).forEach(k => {
     const bv = (b || {})[k], lv = (l || {})[k], cv = (c || {})[k];
-    const v = eq(lv, bv) ? cv : lv;          // só a nuvem mudou → nuvem; só o local mudou ou os dois → local
+    const v = eq(lv, bv) ? cv : lv;
     if (v !== undefined) out[k] = v;
   });
   return out;
@@ -1002,7 +1276,6 @@ function merge3(b, l, c) {
     dias: mapMerge(b.dias, l.dias, c.dias), registros: mapMerge(b.registros, l.registros, c.registros)
   };
 }
-/* texto "canônico" (chaves em ordem) para comparar dois conjuntos de dados */
 function canon(x) {
   return JSON.stringify(x, (k, v) => v && typeof v === 'object' && !Array.isArray(v)
     ? Object.keys(v).sort().reduce((o, key) => (o[key] = v[key], o), {}) : v);
@@ -1016,7 +1289,6 @@ function renderizarAtual() {
   if (a && /^(TEXTAREA|INPUT|SELECT)$/.test(a.tagName)) { cloud.renderPend = true; return; }
   cloud.renderPend = false; go(viewAtual, true);
 }
-/* traz os dados da nuvem para este aparelho (substituindo, ou mesclando com o que ainda não foi enviado) */
 function aplicarNuvem(d, substituir) {
   let c; try { c = JSON.parse(d.dados); } catch (e) { return; }
   let novo = c;
@@ -1038,7 +1310,7 @@ function agendarEnvio() {
 }
 async function puxar() {
   const d = await cloud.api.ler();
-  if (!d) { sync.rev = 0; sync.dirty = true; salvaSync(); return; }   // nuvem vazia: envia o que há aqui
+  if (!d) { sync.rev = 0; sync.dirty = true; salvaSync(); return; }
   if (d.rev > sync.rev) aplicarNuvem(d);
 }
 async function sincronizar() {
@@ -1057,7 +1329,7 @@ async function sincronizar() {
         salvaSync();
         if (!sync.dirty) break;
       } else if (!r.d) { sync.rev = 0; salvaSync(); }
-      else aplicarNuvem(r.d);      // alguém gravou antes: mescla e tenta de novo
+      else aplicarNuvem(r.d);
     }
   } catch (e) { falha = e; console.warn(e); }
   cloud.busy = false;
@@ -1077,7 +1349,7 @@ async function aoLogar(user) {
   setStatus('env');
   try {
     const d = await cloud.api.ler();
-    if (sync.rev === 0) {                       // primeira conexão deste aparelho com esta conta
+    if (sync.rev === 0) {
       if (!d) sync.dirty = true;
       else if (vazioLocal() || mesmosDados(d) || confirm('Esta conta já tem dados salvos na nuvem, e este aparelho também tem dados.\n\nOK = usar os dados da nuvem (os deste aparelho serão substituídos)\nCancelar = enviar os dados deste aparelho para a nuvem (os da nuvem serão substituídos)')) aplicarNuvem(d, true);
       else { sync.rev = d.rev; sync.base = ''; sync.dirty = true; }
@@ -1090,7 +1362,6 @@ async function aoLogar(user) {
   await sincronizar();
 }
 
-/* login */
 function mostrarLogin(m) { document.getElementById('login').classList.remove('hide'); document.getElementById('lg-msg').textContent = m || ''; }
 function esconderLogin() { document.getElementById('login').classList.add('hide'); }
 function msgErro(e) {
@@ -1114,7 +1385,7 @@ async function loginFazer(modo) {
 }
 function loginEntrar() { return loginFazer('entrar'); }
 function loginCriar() { return loginFazer('criar'); }
-/* o Firebase pede um e-mail: o usuário vira "usuario@planejamento-aulas.app" (endereço interno, só de identificação) */
+
 const USER_DOMINIO = '@planejamento-aulas.app';
 function normUser(t) {
   const u = String(t || '').trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
@@ -1128,7 +1399,7 @@ async function sairNuvem() {
 }
 function sincronizarAgora() { sincronizar(); }
 
-/* alterar usuário ou senha (com a senha atual para confirmar) */
+/* alterar usuário ou senha */
 let contaModo = '';
 function abrirConta(modo) {
   contaModo = modo;
@@ -1171,7 +1442,7 @@ async function contaSalvar() {
       if (u + USER_DOMINIO === emailAtual) { m.textContent = 'Esse já é o seu usuário atual.'; return; }
       $('ct-ok').disabled = true; m.textContent = 'Alterando…';
       clearTimeout(cloud.tm); clearTimeout(cloud.retry);
-      for (let i = 0; i < 40 && cloud.busy; i++) await espera(100);   // espera um envio em andamento terminar
+      for (let i = 0; i < 40 && cloud.busy; i++) await espera(100);
       await cloud.api.trocarUsuario(emailAtual, atual, u + USER_DOMINIO);
       contaFechar();
       alert('Usuário alterado para "' + u + '". Seus dados foram copiados para ele.\n\nNo outro aparelho: toque em ☁ (aba Backup), em Sair, e entre com o novo usuário.');
@@ -1179,7 +1450,7 @@ async function contaSalvar() {
   } catch (e) { m.textContent = contaErro(e); $('ct-ok').disabled = false; }
 }
 
-/* ---------- Tema (claro / noturno) ---------- */
+/* ---------- Tema ---------- */
 const TEMA_KEY = 'planejamento-aulas-tema';
 function temaAtual() { return document.documentElement.getAttribute('data-tema') === 'escuro' ? 'escuro' : 'claro'; }
 function aplicarTema(t) {
@@ -1194,7 +1465,7 @@ function alternarTema() {
   aplicarTema(t);
 }
 aplicarTema(temaAtual());
-try {   // sem escolha salva, acompanha o tema do aparelho
+try {
   matchMedia('(prefers-color-scheme: dark)').addEventListener('change', ev => {
     let salvo = null; try { salvo = localStorage.getItem(TEMA_KEY); } catch (e) {}
     if (salvo !== 'claro' && salvo !== 'escuro') aplicarTema(ev.matches ? 'escuro' : 'claro');
@@ -1236,10 +1507,10 @@ function cardNuvem() {
     <button class="s" onclick="sairNuvem()">Sair</button>${rem}</div></div>`;
 }
 
-/* conexão com o Firebase (carrega o SDK da internet só quando há configuração) */
+/* SDK do Firebase */
 async function carregarFirebase(cfg) {
   let A, Au, F, erro;
-  for (const v of ['10.12.2', '13.1.0', '11.0.2']) {      // tenta outra versão do SDK se uma não carregar
+  for (const v of ['10.12.2', '13.1.0', '11.0.2']) {
     const base = 'https://www.gstatic.com/firebasejs/' + v + '/';
     try { [A, Au, F] = await Promise.all([import(base + 'firebase-app.js'), import(base + 'firebase-auth.js'), import(base + 'firebase-firestore.js')]); erro = null; break; }
     catch (e) { erro = e; }
@@ -1258,7 +1529,6 @@ async function carregarFirebase(cfg) {
       await Au.reauthenticateWithCredential(u, Au.EmailAuthProvider.credential(email, atual));
       await Au.updatePassword(u, nova);
     },
-    /* o "e-mail" interno não pode ser editado sem confirmação, então cria o novo usuário e os dados são copiados na sequência */
     trocarUsuario: async (email, atual, novoEmail) => {
       await Au.reauthenticateWithCredential(auth.currentUser, Au.EmailAuthProvider.credential(email, atual));
       await Au.createUserWithEmailAndPassword(auth, novoEmail, atual);
@@ -1300,6 +1570,17 @@ try {
 
 /* troca o layout (computador/celular) se a janela mudar de tamanho */
 try { if (typeof matchMedia === 'function') matchMedia('(max-width: 760px)').addEventListener('change', () => go(viewAtual)); } catch(e) {}
+
+// Atualiza periodicamente a cada 30 segundos para refletir a aula atual em tempo real
+setInterval(() => {
+  if (viewAtual === 'inicio' && fmt(diaIni) === fmt(new Date())) {
+    const modalAberto = !document.getElementById('modal-plano').classList.contains('hide');
+    const focado = document.activeElement && /^(TEXTAREA|INPUT|SELECT)$/.test(document.activeElement.tagName);
+    if (!modalAberto && !focado) {
+      rInicio();
+    }
+  }
+}, 30000);
 
 go('inicio');
 iniciarNuvem();

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#2f6fed" id="tc">
 <script>
-/* aplica o tema antes de desenhar a página, para não piscar: escolha salva, ou o tema do aparelho */
+/* aplica o tema antes de desenhar a página, para não piscar */
 try {
   var _t = localStorage.getItem('planejamento-aulas-tema');
   if (_t !== 'claro' && _t !== 'escuro') _t = (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'escuro' : 'claro';
@@ -55,11 +55,15 @@ try {
   .bar .push { margin-left:auto; }
   .tag { display:inline-block; font-size:11px; color:#fff; background:var(--cor,#999); border-radius:4px; padding:1px 6px; margin-right:4px; }
   .badge { display:inline-block; font-size:11px; color:#fff; background:#e67e22; border-radius:4px; padding:1px 6px; margin-right:4px; }
+  .badge-prova { display:inline-block; font-size:11px; color:#fff; border-radius:4px; padding:2px 7px; font-weight:600; margin-right:4px; }
+  .badge-parcial { background:#2f6fed; }
+  .badge-global { background:#8e44ad; }
+  .badge-simulado { background:#d35400; }
   .vazio { color:var(--mut); font-size:13px; }
   .hide { display:none !important; }
   #aviso { color:var(--mut); font-size:12px; }
 
-  /* grade semanal (Planejar, computador) */
+  /* grade semanal */
   .wkwrap { overflow-x:auto; padding-bottom:6px; }
   .wk { display:grid; grid-template-columns:90px repeat(5, minmax(190px, 1fr)); gap:8px; min-width:1040px; align-items:stretch; }
   .wk .hd { background:var(--sup); border:1px solid var(--bd); border-radius:8px; padding:8px; text-align:center; font-weight:600; font-size:14px; }
@@ -85,12 +89,11 @@ try {
   .btn-exp { background:transparent; border:0; color:var(--pri); cursor:pointer; font-size:13px; padding:0 2px; }
   .ajl { color:var(--pri); cursor:pointer; font-size:13px; text-decoration:none; margin-left:2px; }
 
-  /* início, planejar (celular) e extras */
+  /* início, planejar e extras */
   .aula { background:var(--card); border:1px solid var(--bd); border-left:6px solid var(--cor,#999); border-radius:10px; padding:12px 14px; margin-bottom:12px; }
   .aula h3 { margin:0 0 8px; font-size:15px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; }
   .aula .slot { border-left:0; padding-left:0; margin-bottom:8px; }
   
-  /* Aula em andamento (destaque em tempo real) */
   .aula.aula-agora {
     border: 2px solid var(--pri);
     border-left: 8px solid var(--pri);
@@ -123,7 +126,6 @@ try {
     100% { opacity: 1; filter: brightness(1.15); }
   }
 
-  /* NOVO ESTILO: Destaque do Planejamento */
   .plano { 
     white-space:pre-wrap; 
     line-height:1.5; 
@@ -149,7 +151,7 @@ try {
   .sem { color:var(--warn); background:var(--warn-bg); border:1px solid var(--warn-bd); border-radius:8px; padding:8px 10px; font-size:14px; display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top: 12px; margin-bottom: 8px; }
   .aviso-dia { color:var(--info); background:var(--info-bg); border:1px solid var(--info-bd); border-radius:8px; padding:8px 10px; font-size:14px; margin-bottom:12px; display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
 
-  /* confirmação: o planejamento foi seguido? */
+  /* confirmação */
   .conf { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin:8px 0; font-size:14px; }
   .conf textarea { flex-basis:100%; min-height:56px; }
   .conf.feito { color:var(--okt); }
@@ -161,16 +163,18 @@ try {
   .seg-ok { color:var(--okt); }
   .seg-no { color:var(--danger); }
   .resumo { color:var(--mut); font-size:14px; margin-bottom:12px; }
-  .tarefa { display:flex; gap:10px; align-items:flex-start; padding:9px 0; border-top:1px solid var(--bd); }
-  .tarefa:first-child { border-top:0; }
-  .tarefa input[type=checkbox] { width:20px; height:20px; margin-top:2px; flex:0 0 auto; cursor:pointer; }
-  .tarefa .tx { flex:1; min-width:0; word-break:break-word; }
-  .tarefa.feita .tx { text-decoration:line-through; color:var(--mut); }
-  .tarefa .meta { font-size:13px; color:var(--mut); }
-  .tarefa .meta.atraso { color:var(--danger); font-weight:600; }
-  .tarefa .acoes { display:flex; gap:6px; flex:0 0 auto; }
-  .tarefa .acoes button { padding:3px 8px; }
-  .tarefa .acoes input[type=date] { width:130px !important; font-size:13px; padding:4px 6px; }
+  
+  /* Tarefas e Provas */
+  .tarefa, .item-prova { display:flex; gap:10px; align-items:flex-start; padding:10px 0; border-top:1px solid var(--bd); }
+  .tarefa:first-child, .item-prova:first-child { border-top:0; }
+  .tarefa input[type=checkbox], .item-prova input[type=checkbox] { width:20px; height:20px; margin-top:2px; flex:0 0 auto; cursor:pointer; }
+  .tarefa .tx, .item-prova .tx { flex:1; min-width:0; word-break:break-word; }
+  .tarefa.feita .tx, .item-prova.feita .tx { text-decoration:line-through; color:var(--mut); }
+  .tarefa .meta, .item-prova .meta { font-size:13px; color:var(--mut); margin-top:2px; }
+  .tarefa .meta.atraso, .item-prova .meta.atraso { color:var(--danger); font-weight:600; }
+  .tarefa .acoes, .item-prova .acoes { display:flex; gap:6px; flex:0 0 auto; align-items:center; }
+  .tarefa .acoes button, .item-prova .acoes button { padding:3px 8px; }
+  .tarefa .acoes input[type=date], .item-prova .acoes input[type=date] { width:130px !important; font-size:13px; padding:4px 6px; }
   .tgrupo { font-size:14px; font-weight:700; margin:16px 0 4px; }
   .tgrupo.atraso { color:var(--danger); }
   .tnova { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
@@ -229,7 +233,7 @@ try {
   #modal-txt { flex:1; min-height:280px; font-size:15px; line-height:1.55; padding:12px; border-radius:8px; }
   .modal-rodape { display:flex; justify-content:space-between; align-items:center; margin-top:12px; flex-wrap:wrap; gap:8px; }
 
-  /* celular: barra de abas embaixo, como um app */
+  /* celular */
   @media (max-width: 760px) {
     header { position:sticky; top:0; z-index:10; padding:8px 12px 0; gap:0 10px; display:flex; justify-content:space-between; align-items:center; }
     header h1 { font-size:16px; margin:0; padding:4px 0; flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -261,6 +265,7 @@ try {
   <nav id="nav">
     <button data-v="inicio" class="on"><span class="ic">🏠</span><span>Início</span></button>
     <button data-v="plan"><span class="ic">📝</span><span>Planejar</span></button>
+    <button data-v="provas"><span class="ic">📋</span><span>Provas</span></button>
     <button data-v="tarefas"><span class="ic">✅</span><span>Tarefas</span></button>
     <button data-v="extras"><span class="ic">🔁</span><span>Extras e ajustes</span></button>
     <button data-v="turma"><span class="ic">🔎</span><span>Por turma</span></button>
@@ -277,6 +282,7 @@ try {
 <main>
   <section id="v-inicio"></section>
   <section id="v-plan" class="hide"></section>
+  <section id="v-provas" class="hide"></section>
   <section id="v-tarefas" class="hide"></section>
   <section id="v-extras" class="hide"></section>
   <section id="v-turma" class="hide"></section>
@@ -358,10 +364,10 @@ function vazio() {
       {id: uid(), nome: 'Escola Integral', aulas: 9, horas: {}},
       {id: uid(), nome: 'Escola Noturna', aulas: 4, horas: {}}
     ],
-    turmas: [], horario: {}, planos: {}, extras: [], ajustes: {}, dias: {}, registros: {}, tarefas: []
+    turmas: [], horario: {}, planos: {}, extras: [], ajustes: {}, dias: {}, registros: {}, tarefas: [], provas: []
   };
 }
-/* dados iniciais: horário e turmas transcritos das grades enviadas */
+
 function seed() {
   const eI = {id: uid(), nome: 'Escola Integral', aulas: 9, horas: {}};
   const eN = {id: uid(), nome: 'Escola Noturna', aulas: 4, horas: {}};
@@ -371,7 +377,6 @@ function seed() {
     if (!T[k]) { T[k] = {id: uid(), nome, escolaId: esc.id}; turmas.push(T[k]); }
     return T[k].id;
   };
-  // [dia (1=seg ... 5=sex), aula, turma]
   [
     [3,1,'3ª Informática C'], [5,1,'3ª Administração A'],
     [2,2,'1ª Des. Sistemas C'], [5,2,'3ª Agroindústria B'],
@@ -386,18 +391,19 @@ function seed() {
   [2, 3].forEach(d => [1, 2, 3, 4].forEach(a => {
     horario[eN.id + '|' + d + '|' + a] = t(eN, d === 2 ? 'EJA Presencial – História' : 'EJA Presencial – Geografia');
   }));
-  return {escolas: [eI, eN], turmas, horario, planos: {}, extras: [], ajustes: {}, dias: {}, registros: {}, tarefas: []};
+  return {escolas: [eI, eN], turmas, horario, planos: {}, extras: [], ajustes: {}, dias: {}, registros: {}, tarefas: [], provas: []};
 }
-/* converte dados da versão 1 (escola única) para a versão 2 */
+
 function migrar(d) {
   if (d.escolas) return Object.assign(vazio(), d);
   const e = {id: uid(), nome: 'Escola 1', aulas: d.aulas || 6, horas: d.horas || {}};
-  const n = {escolas:[e], turmas:[], horario:{}, planos:{}, extras:[], ajustes:{}, dias:{}, registros:{}, tarefas:[]};
+  const n = {escolas:[e], turmas:[], horario:{}, planos:{}, extras:[], ajustes:{}, dias:{}, registros:{}, tarefas:[], provas:[]};
   (d.turmas||[]).forEach(t => n.turmas.push({id:t.id, nome:t.nome, escolaId:e.id}));
   Object.entries(d.horario||{}).forEach(([k,v]) => { const [dia,a] = k.split('|'); n.horario[e.id+'|'+dia+'|'+a] = v; });
   Object.entries(d.planos||{}).forEach(([k,v]) => { const [iso,a,t] = k.split('|'); n.planos[iso+'|'+e.id+'|'+a+'|'+t] = v; });
   return n;
 }
+
 function load() {
   try {
     const d = JSON.parse(localStorage.getItem(KEY));
@@ -409,6 +415,7 @@ function load() {
   try { localStorage.setItem(KEY, JSON.stringify(s)); } catch(e) {}
   return s;
 }
+
 /* ---------- estado da sincronização ---------- */
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyDgKNlnn5lWQ1OMJxtCXNtN6IQWC2wG9gY",
@@ -451,13 +458,11 @@ function segunda(d) { const x = new Date(d); x.setHours(12,0,0,0); const w = x.g
 function agora() { const d = new Date(); d.setHours(12,0,0,0); return d; }
 function isMob() { return typeof matchMedia === 'function' && matchMedia('(max-width: 760px)').matches; }
 
-/* alteração de dia inteiro: chave "data|idDaEscola" (ou "data|*" para todas as escolas) */
 function diaCfg(iso, eid) { return S.dias[iso+'|'+eid] || S.dias[iso+'|*'] || null; }
 function diasDe(iso) { return Object.keys(S.dias).filter(k => k.startsWith(iso+'|')).map(k => [k.split('|')[1], S.dias[k]]); }
 function normDias() { Object.keys(S.dias).forEach(k => { if (k.indexOf('|') < 0) { S.dias[k+'|*'] = S.dias[k]; delete S.dias[k]; } }); }
 function diaW(iso, eid) { const dd = diaCfg(iso, eid); return dd && dd.tipo === 'como' ? dd.dow : dow(iso); }
 
-/* aula efetiva de um horário numa data */
 function efetiva(e, iso, w, a) {
   const dd = diaCfg(iso, e.id);
   if (dd && dd.tipo === 'feriado') return null;
@@ -489,7 +494,6 @@ function itensDoDia(iso) {
   return itens;
 }
 
-/* Verifica se uma aula está acontecendo agora com base no horário cadastrado */
 function getIntervaloMinutos(strHora) {
   if (!strHora || typeof strHora !== 'string') return null;
   const limpo = strHora.trim();
@@ -502,7 +506,7 @@ function getIntervaloMinutos(strHora) {
   const mInicio = limpo.match(/^(\d{1,2}):(\d{2})$/);
   if (mInicio) {
     const ini = parseInt(mInicio[1], 10) * 60 + parseInt(mInicio[2], 10);
-    return { ini, fim: ini + 50 }; // duração padrão estimada: 50 minutos
+    return { ini, fim: ini + 50 };
   }
   return null;
 }
@@ -523,7 +527,6 @@ function isAulaAgora(item, isoHoje) {
   return minutosAtuais >= range.ini && minutosAtuais < range.fim;
 }
 
-/* aviso quando o dia inteiro foi alterado */
 function bannerDia(iso) {
   return diasDe(iso).map(([eid, dd]) => {
     const quem = eid === '*' ? '' : ' (' + esc(escolaNome(eid)) + ')';
@@ -554,12 +557,10 @@ let extraData = '';
 let ajPre = null;
 let diaPre = '';
 let viewAtual = 'inicio';
-
-/* Estado do Modal de Edição Ampliada */
 let modalAtivo = { tipo: '', key: '' };
 
 /* ---------- navegação ---------- */
-const VIEWS = ['inicio','plan','tarefas','extras','turma','hor','turmas','escolas','bkp'];
+const VIEWS = ['inicio','plan','provas','tarefas','extras','turma','hor','turmas','escolas','bkp'];
 document.getElementById('nav').addEventListener('click', e => {
   const b = e.target.closest ? e.target.closest('button') : null;
   if (b && b.dataset.v) go(b.dataset.v);
@@ -568,11 +569,10 @@ function go(v, manter) {
   viewAtual = v;
   document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('on', b.dataset.v === v));
   VIEWS.forEach(x => document.getElementById('v-'+x).classList.toggle('hide', x !== v));
-  ({inicio:rInicio, plan:rPlan, tarefas:rTarefas, extras:rExtras, turma:rTurma, hor:rHor, turmas:rTurmas, escolas:rEscolas, bkp:rBkp})[v]();
+  ({inicio:rInicio, plan:rPlan, provas:rProvas, tarefas:rTarefas, extras:rExtras, turma:rTurma, hor:rHor, turmas:rTurmas, escolas:rEscolas, bkp:rBkp})[v]();
   if (!manter && window.scrollTo) window.scrollTo(0, 0);
 }
 
-/* auto-save dos textareas */
 function bindAuto(root) {
   root.querySelectorAll('textarea[data-k], textarea[data-x], textarea[data-r]').forEach(t => {
     let tm;
@@ -614,7 +614,6 @@ function abrirModalPlano(tipo, key, titulo, subtitulo) {
 function fecharModalPlano() {
   document.getElementById('modal-plano').classList.add('hide');
   modalAtivo = { tipo: '', key: '' };
-  // Atualiza a visualização atual imediatamente ao fechar o modal
   go(viewAtual, true);
 }
 
@@ -624,8 +623,6 @@ function inserirTopico(textoTopico) {
   const fim = txt.selectionEnd;
   const antes = txt.value.substring(0, inicio);
   const depois = txt.value.substring(fim);
-  
-  // Adiciona quebra de linha antes caso o cursor não esteja no começo de uma nova linha
   const precisaQuebra = antes.length > 0 && !antes.endsWith('\n');
   const insercao = (precisaQuebra ? '\n' : '') + textoTopico;
   
@@ -633,8 +630,6 @@ function inserirTopico(textoTopico) {
   const novaPos = inicio + insercao.length;
   txt.focus();
   txt.setSelectionRange(novaPos, novaPos);
-  
-  // Dispara o salvamento e atualização
   salvarDoModal();
 }
 
@@ -663,36 +658,24 @@ function salvarDoModal() {
     }
   }
   save();
-
-  // Se a edição foi feita estando na tela inicial, atualiza o card e texto da aula instantaneamente
-  if (viewAtual === 'inicio') {
-    rInicio();
-  }
-
+  if (viewAtual === 'inicio') rInicio();
   if (st) {
     st.textContent = '✔ Salvo';
     setTimeout(() => { if (st) st.textContent = 'Salvo automaticamente'; }, 1300);
   }
 }
 
-// Vincula digitação no textarea do modal
 (function setupModalInput() {
   let tm;
   window.addEventListener('DOMContentLoaded', () => {
     const txt = document.getElementById('modal-txt');
     if (!txt) return;
-    txt.addEventListener('input', () => {
-      clearTimeout(tm);
-      tm = setTimeout(salvarDoModal, 300);
-    });
-    txt.addEventListener('change', () => {
-      clearTimeout(tm);
-      salvarDoModal();
-    });
+    txt.addEventListener('input', () => { clearTimeout(tm); tm = setTimeout(salvarDoModal, 300); });
+    txt.addEventListener('change', () => { clearTimeout(tm); salvarDoModal(); });
   });
 })();
 
-/* ---------- Confirmação: o planejamento foi seguido? ---------- */
+/* ---------- Confirmação ---------- */
 function podeConfirmar(iso) { return iso <= fmt(new Date()); }
 function blocoConfirma(key, iso) {
   if (!podeConfirmar(iso)) return '';
@@ -721,7 +704,7 @@ function reg(key, ok) {
 }
 function regDesfaz(key) { delete S.registros[key]; save(); go(viewAtual, true); }
 
-/* ---------- Tarefas (checklist com datas) ---------- */
+/* ---------- Funções de Apoio a Datas ---------- */
 function addDiasISO(iso, n) { const d = new Date(iso + 'T12:00:00'); d.setDate(d.getDate() + n); return fmt(d); }
 function rotuloData(iso) {
   const h = fmt(new Date());
@@ -730,6 +713,170 @@ function rotuloData(iso) {
   if (iso === addDiasISO(h, -1)) return 'Ontem';
   return DIAS[dow(iso)] + ', ' + br(iso);
 }
+
+/* ---------- Provas (Parcial, Global e Simulado ENEM) ---------- */
+const TIPOS_PROVA = {
+  'Parcial': { nome: 'Parcial', cls: 'badge-parcial' },
+  'Global': { nome: 'Global', cls: 'badge-global' },
+  'Simulado ENEM': { nome: 'Simulado ENEM', cls: 'badge-simulado' }
+};
+
+function badgeProva(tipo) {
+  const tp = TIPOS_PROVA[tipo] || { nome: tipo, cls: 'badge-parcial' };
+  return `<span class="badge-prova ${tp.cls}">${esc(tp.nome)}</span>`;
+}
+
+function linhaProva(p, comData) {
+  const h = fmt(new Date()), atraso = p.data && !p.feita && p.data < h;
+  const escNome = p.escolaId ? escolaNome(p.escolaId) : '';
+  const tNome = p.turmaId ? turmaNome(p.turmaId) : (p.turmaTxt || 'Todas as turmas');
+  const meta = p.data ? `<div class="meta${atraso ? ' atraso' : ''}">${atraso ? 'Atrasada · ' : ''}${esc(rotuloData(p.data))}${escNome ? ' · '+esc(escNome) : ''}</div>` : '';
+  return `<div class="item-prova${p.feita ? ' feita' : ''}">
+    <input type="checkbox" ${p.feita ? 'checked' : ''} onchange="provaMarcar('${p.id}', this.checked)" aria-label="Marcar como realizada">
+    <div class="tx">
+      ${badgeProva(p.tipo)} <b>${esc(tNome)}</b>
+      ${p.conteudo ? `<div style="font-size:13.5px;margin-top:2px">${esc(p.conteudo)}</div>` : ''}
+      ${comData ? meta : ''}
+    </div>
+  </div>`;
+}
+
+function linhaProvaPag(p) {
+  const h = fmt(new Date()), atraso = p.data && !p.feita && p.data < h;
+  const escNome = p.escolaId ? escolaNome(p.escolaId) : '';
+  const tNome = p.turmaId ? turmaNome(p.turmaId) : (p.turmaTxt || 'Todas as turmas');
+  return `<div class="item-prova${p.feita ? ' feita' : ''}">
+    <input type="checkbox" ${p.feita ? 'checked' : ''} onchange="provaMarcar('${p.id}', this.checked)" aria-label="Marcar como realizada">
+    <div class="tx">
+      ${badgeProva(p.tipo)} <b>${esc(tNome)}</b> ${escNome ? `<small class="vazio">(${esc(escNome)})</small>` : ''}
+      ${p.conteudo ? `<div style="font-size:13.5px;margin-top:3px">${esc(p.conteudo)}</div>` : ''}
+      ${p.data ? `<div class="meta${atraso ? ' atraso' : ''}">${atraso ? 'Atrasada · ' : ''}${esc(rotuloData(p.data))}</div>` : ''}
+    </div>
+    <div class="acoes">
+      <input type="date" value="${p.data || ''}" onchange="provaData('${p.id}', this.value)" title="Alterar data" style="width:auto">
+      <button class="s" onclick="provaExcluir('${p.id}')" title="Excluir" aria-label="Excluir prova">🗑</button>
+    </div>
+  </div>`;
+}
+
+function blocoProvasInicio() {
+  const h = fmt(new Date()), am = addDiasISO(h, 1);
+  const pend = (S.provas || []).filter(p => !p.feita && p.data && p.data <= am)
+    .sort((a, b) => a.data.localeCompare(b.data) || a.tipo.localeCompare(b.tipo));
+  if (!pend.length) return '';
+  const grupo = (tit, arr, cls) => arr.length ? `<div class="tgrupo ${cls || ''}">${tit}</div>` + arr.map(p => linhaProva(p, false)).join('') : '';
+  return `<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+    <b>📋 Provas e Avaliações</b><button class="s" onclick="go('provas')">Ver todas</button></div>` +
+    grupo('Atrasadas / Pendentes', pend.filter(p => p.data < h), 'atraso') +
+    grupo('Hoje', pend.filter(p => p.data === h)) +
+    grupo('Amanhã', pend.filter(p => p.data === am)) + `</div>`;
+}
+
+function provaAdd() {
+  const dt = document.getElementById('pr-data'), tp = document.getElementById('pr-tipo');
+  const sc = document.getElementById('pr-esc'), tm = document.getElementById('pr-turma');
+  const tt = document.getElementById('pr-turmatxt'), ct = document.getElementById('pr-conteudo');
+  const data = dt.value || fmt(new Date());
+  const tipo = tp.value;
+  const escolaId = sc.value;
+  const turmaId = tm.value === '__outra' ? '' : tm.value;
+  const turmaTxt = tm.value === '__outra' ? tt.value.trim() : '';
+  const conteudo = ct.value.trim();
+
+  if (!S.provas) S.provas = [];
+  S.provas.push({
+    id: uid(),
+    data,
+    tipo,
+    escolaId,
+    turmaId,
+    turmaTxt,
+    conteudo,
+    feita: false
+  });
+  save();
+  ct.value = '';
+  go('provas', true);
+}
+
+function provaMarcar(id, v) { const p = (S.provas || []).find(p => p.id === id); if (p) { p.feita = !!v; save(); go(viewAtual, true); } }
+function provaData(id, v) { const p = (S.provas || []).find(p => p.id === id); if (p) { p.data = v || ''; save(); go('provas', true); } }
+function provaExcluir(id) { S.provas = (S.provas || []).filter(p => p.id !== id); save(); go('provas', true); }
+function provasLimpar() {
+  const n = (S.provas || []).filter(p => p.feita).length;
+  if (n && confirm('Excluir as ' + n + ' provas marcadas como realizadas?')) { S.provas = S.provas.filter(p => !p.feita); save(); go('provas', true); }
+}
+
+function rProvas() {
+  const el = document.getElementById('v-provas');
+  const h = fmt(new Date()), am = addDiasISO(h, 1);
+  const todas = S.provas || [];
+  const abertas = todas.filter(p => !p.feita), feitas = todas.filter(p => p.feita);
+  const ord = a => [...a].sort((x, y) => (x.data || '9999').localeCompare(y.data || '9999'));
+  const grupo = (tit, arr, cls) => arr.length ? `<div class="tgrupo ${cls || ''}">${tit} (${arr.length})</div>` + ord(arr).map(linhaProvaPag).join('') : '';
+
+  const escOpts = S.escolas.map(e => `<option value="${e.id}">${esc(e.nome)}</option>`).join('');
+
+  let html = `<h2 style="font-size:20px">Provas e Avaliações</h2>
+  <div class="card">
+    <h2>Agendar nova avaliação</h2>
+    <div class="bar">
+      <label>Data <input type="date" id="pr-data" value="${h}"></label>
+      <label>Tipo 
+        <select id="pr-tipo">
+          <option value="Parcial">Parcial</option>
+          <option value="Global">Global</option>
+          <option value="Simulado ENEM">Simulado ENEM</option>
+        </select>
+      </label>
+      <label>Escola <select id="pr-esc" onchange="atualizarTurmasProva()">${escOpts}</select></label>
+      <label>Turma <select id="pr-turma" onchange="toggleTurmaTxtProva()"></select></label>
+      <input id="pr-turmatxt" class="hide" placeholder="Nome da turma">
+    </div>
+    <div class="bar" style="margin-top:4px">
+      <input type="text" id="pr-conteudo" placeholder="Conteúdo da prova, capítulos ou detalhes (opcional)…" style="flex:1;min-width:240px">
+      <button class="b" onclick="provaAdd()">Agendar prova</button>
+    </div>
+  </div>`;
+
+  if (!todas.length) {
+    html += `<div class="card vazio">Nenhuma avaliação agendada. Adicione acima para acompanhar suas parciais, globais e simulados.</div>`;
+  } else {
+    html += `<div class="card">` +
+      (abertas.length ? '' : `<div class="vazio">Nenhuma avaliação pendente 🎉</div>`) +
+      grupo('Atrasadas / Pendentes', abertas.filter(p => p.data && p.data < h), 'atraso') +
+      grupo('Hoje', abertas.filter(p => p.data === h)) +
+      grupo('Amanhã', abertas.filter(p => p.data === am)) +
+      grupo('Próximas', abertas.filter(p => p.data > am)) +
+      grupo('Sem data', abertas.filter(p => !p.data)) + `</div>`;
+    if (feitas.length) html += `<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+      <b>Realizadas (${feitas.length})</b><button class="s" onclick="provasLimpar()">Excluir realizadas</button></div>` +
+      ord(feitas).reverse().map(linhaProvaPag).join('') + `</div>`;
+  }
+  el.innerHTML = html;
+  atualizarTurmasProva();
+}
+
+function atualizarTurmasProva() {
+  const escEl = document.getElementById('pr-esc');
+  const tmEl = document.getElementById('pr-turma');
+  if (!escEl || !tmEl) return;
+  const eid = escEl.value;
+  const turmasEscola = ordT(S.turmas.filter(t => t.escolaId === eid));
+  tmEl.innerHTML = turmasEscola.map(t => `<option value="${t.id}">${esc(t.nome)}</option>`).join('') +
+    '<option value="__outra">Outra turma (digitar)…</option>';
+  toggleTurmaTxtProva();
+}
+
+function toggleTurmaTxtProva() {
+  const tmEl = document.getElementById('pr-turma');
+  const txtEl = document.getElementById('pr-turmatxt');
+  if (tmEl && txtEl) {
+    txtEl.classList.toggle('hide', tmEl.value !== '__outra');
+  }
+}
+
+/* ---------- Tarefas ---------- */
 function linhaTarefa(t, comData) {
   const h = fmt(new Date()), atraso = t.data && !t.feita && t.data < h;
   const meta = t.data ? `<div class="meta${atraso ? ' atraso' : ''}">${atraso ? 'Atrasada · ' : ''}${esc(rotuloData(t.data))}</div>` : '';
@@ -816,7 +963,8 @@ function rInicio() {
     <button class="s push" onclick="novaExtra('${iso}')">+ Aula extra</button>
     <button class="s" onclick="ajustarDia('${iso}')">Alterar este dia</button>
   </div>
-  <h2 style="font-size:20px">${DIAS_F[w]}, ${br(iso)}${ehHoje ? ' <span class="badge" style="background:var(--pri)">hoje</span>' : ''}</h2>` + bannerDia(iso) + blocoTarefasInicio();
+  <h2 style="font-size:20px">${DIAS_F[w]}, ${br(iso)}${ehHoje ? ' <span class="badge" style="background:var(--pri)">hoje</span>' : ''}</h2>` + 
+  bannerDia(iso) + blocoProvasInicio() + blocoTarefasInicio();
 
   const itens = itensDoDia(iso);
   if (!itens.length) {
@@ -831,7 +979,6 @@ function rInicio() {
     (pend ? ` · <b style="color:var(--warn)">${pend} sem planejamento</b>` : ' · tudo planejado ✔') +
     (aConf ? ` · <b style="color:var(--warn)">${aConf} ${aConf === 1 ? 'a confirmar' : 'a confirmar'}</b>` : '') + `</div>`;
 
-  // Ordena para que a aula em andamento fique em primeiro lugar se for o dia de hoje
   if (ehHoje) {
     itens.sort((p, q) => {
       const pAgora = isAulaAgora(p, iso);
@@ -867,7 +1014,7 @@ function rInicio() {
       html += `<div class="aula${classeDestaque}" style="--cor:${cor(e.id)}">
         <h3><span>${seloAgora}<span class="tag" style="--cor:${cor(e.id)}">${esc(e.nome)}</span>${i.a}ª aula${h} · ${esc(eff.nome)}${eff.troca ? ' <span class="badge">TROCA</span>' : ''}</span>
         <button class="s" onclick="abrirModalPlano('k','${eff.k}','${esc(tit)}','${esc(sub)}')">⛶ Abrir tela maior</button></h3>` +
-        (eff.troca ? `<div class="motivo">No lugar de ${esc(eff.de)}${eff.motivo ? ' · '+esc(eff.motivo) : ''}</div>` : '') +
+        (eff.troca ? `<div class="motivo">No lugar de ${esc(eff.de)}</div>` : '') +
         (txt ? `<div class="plano">${esc(S.planos[eff.k])}</div>` + blocoConfirma(eff.k, iso)
              : `<div class="sem">Ainda não há planejamento para esta aula. <button class="s" onclick="abrirModalPlano('k','${eff.k}','${esc(tit)}','${esc(sub)}')">Planejar agora (tela maior)</button></div>`) +
         `<div><button class="s" onclick="ajustar('${iso}','${e.id}',${i.a})">Cancelar, ceder ou trocar</button>` +
@@ -903,7 +1050,7 @@ function rPlan() {
   el.innerHTML = html;
   bindAuto(el);
 }
-/* computador: grade com uma linha por aula e uma coluna por dia */
+
 function planSemana(dias, hoje) {
   let g = '<div class="wkwrap"><div class="wk"><div></div>' + dias.map(d => {
     const nota = diasDe(d.iso).map(([eid, dd]) => '<br><small>' + (eid === '*' ? '' : esc(escolaNome(eid)) + ': ') +
@@ -963,7 +1110,7 @@ function planSemana(dias, hoje) {
   g += '</div></div>';
   return linhas ? g : `<div class="card vazio">Nenhuma aula nesta semana.</div>`;
 }
-/* celular: um dia por vez, com abas de segunda a sexta */
+
 function planDia(dias, hoje) {
   const sel = (ref.getDay() === 0 || ref.getDay() === 6) ? dias[0].iso : fmt(ref);
   const nomes = ['Seg','Ter','Qua','Qui','Sex'];
@@ -1037,7 +1184,7 @@ function rExtras() {
     <div style="margin-top:8px"><button class="b" onclick="addExtra()">Adicionar aula extra</button> <span id="x-msg" class="vazio"></span></div></div>
 
     <div class="card" id="aj-card"><h2>Cancelar, ceder ou trocar uma aula do horário</h2>
-      <p class="vazio">Vale só para a data escolhida; o horário semanal não muda. Aulas canceladas ou cedidas somem do Início e do Planejar e ficam registradas aqui embaixo.</p>
+      <p class="vazio">Vale só para a data escolhida; o horário semanal não muda.</p>
       <div class="bar">
         <label>Data <input type="date" id="a-data"></label>
         <label>Escola <select id="a-esc" onchange="fillAj()">${escOpts}</select></label>
@@ -1054,7 +1201,7 @@ function rExtras() {
       <button class="b" onclick="addAjuste()">Salvar ajuste</button> <span id="a-msg" class="vazio"></span></div>
 
     <div class="card" id="dia-card"><h2>Alterar um dia inteiro</h2>
-      <p class="vazio">Para feriado ou recesso (sem aula) ou para quando um dia segue o horário de outro dia da semana, por exemplo uma quarta com o horário de sexta.</p>
+      <p class="vazio">Para feriado ou recesso (sem aula) ou para quando um dia segue o horário de outro dia da semana.</p>
       <div class="bar">
         <label>Data <input type="date" id="d-data"></label>
         <label>Escola <select id="d-esc"><option value="*">Todas as escolas</option>${escOpts}</select></label>
@@ -1301,7 +1448,7 @@ function delE(id) {
 /* ---------- Backup ---------- */
 function rBkp() {
   document.getElementById('v-bkp').innerHTML = cardNuvem() + `<div class="card"><h2>Backup</h2>
-    <p class="vazio">Os dados ficam salvos neste navegador, neste aparelho. Faça um backup de vez em quando, principalmente antes de limpar o histórico do navegador. Para levar os dados do computador para o celular (ou ao contrário), baixe o backup aqui e restaure no outro aparelho.</p>
+    <p class="vazio">Os dados ficam salvos neste navegador, neste aparelho.</p>
     <button class="b" onclick="exportar()">Baixar backup (.json)</button>
     <p><label>Restaurar backup: <input type="file" accept=".json" onchange="importar(this.files[0])"></label></p>
     <p><button class="s" onclick="exportarTxt()">Exportar planejamentos em texto (.txt)</button></p></div>`;
@@ -1372,7 +1519,7 @@ function merge3(b, l, c) {
     extras: listMerge(b.extras, l.extras, c.extras), horario: mapMerge(b.horario, l.horario, c.horario),
     planos: mapMerge(b.planos, l.planos, c.planos), ajustes: mapMerge(b.ajustes, l.ajustes, c.ajustes),
     dias: mapMerge(b.dias, l.dias, c.dias), registros: mapMerge(b.registros, l.registros, c.registros),
-    tarefas: listMerge(b.tarefas, l.tarefas, c.tarefas)
+    tarefas: listMerge(b.tarefas, l.tarefas, c.tarefas), provas: listMerge(b.provas, l.provas, c.provas)
   };
 }
 function canon(x) {
@@ -1381,7 +1528,7 @@ function canon(x) {
 }
 function mesmosDados(d) { try { return canon(JSON.parse(d.dados)) === canon(S); } catch (e) { return false; } }
 function vazioLocal() {
-  return !Object.keys(S.planos).length && !S.extras.length && !Object.keys(S.ajustes).length && !Object.keys(S.dias).length && !(S.tarefas||[]).length;
+  return !Object.keys(S.planos).length && !S.extras.length && !Object.keys(S.ajustes).length && !Object.keys(S.dias).length && !(S.tarefas||[]).length && !(S.provas||[]).length;
 }
 function renderizarAtual() {
   const a = document.activeElement;
@@ -1667,10 +1814,8 @@ try {
   }
 } catch (e) {}
 
-/* troca o layout (computador/celular) se a janela mudar de tamanho */
 try { if (typeof matchMedia === 'function') matchMedia('(max-width: 760px)').addEventListener('change', () => go(viewAtual)); } catch(e) {}
 
-// Atualiza periodicamente a cada 30 segundos para refletir a aula atual em tempo real
 setInterval(() => {
   if (viewAtual === 'inicio' && fmt(diaIni) === fmt(new Date())) {
     const modalAberto = !document.getElementById('modal-plano').classList.contains('hide');
@@ -1683,7 +1828,6 @@ setInterval(() => {
 
 go('inicio');
 iniciarNuvem();
-/* service worker: necessário para instalar como app e abrir sem internet */
 try { if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
 </script>
 </body>
